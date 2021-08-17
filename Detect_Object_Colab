@@ -1,0 +1,516 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "Untitled3.ipynb",
+      "provenance": [],
+      "authorship_tag": "ABX9TyP0HL6rDBfcjs9rUZcrpFfl",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/javier-run/Object_Detector/blob/main/Detect_Object_Colab\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "Dkp0ul71mCdv"
+      },
+      "source": [
+        "1)Instalamos"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "wsWBT_zsd52G",
+        "outputId": "1101529f-9402-4853-d00b-f3b662bbcbe9"
+      },
+      "source": [
+        "!sudo apt install tesseract-ocr\n",
+        "!pip install pytesseract"
+      ],
+      "execution_count": 17,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Reading package lists... Done\n",
+            "Building dependency tree       \n",
+            "Reading state information... Done\n",
+            "tesseract-ocr is already the newest version (4.00~git2288-10f4998a-2).\n",
+            "0 upgraded, 0 newly installed, 0 to remove and 40 not upgraded.\n",
+            "Collecting pytesseract\n",
+            "  Downloading pytesseract-0.3.8.tar.gz (14 kB)\n",
+            "Requirement already satisfied: Pillow in /usr/local/lib/python3.7/dist-packages (from pytesseract) (7.1.2)\n",
+            "Building wheels for collected packages: pytesseract\n",
+            "  Building wheel for pytesseract (setup.py) ... \u001b[?25l\u001b[?25hdone\n",
+            "  Created wheel for pytesseract: filename=pytesseract-0.3.8-py2.py3-none-any.whl size=14072 sha256=dda9945cef371cb0a5257a4083aa2433c6635d4a4c39c32b1d248ae58993ecbb\n",
+            "  Stored in directory: /root/.cache/pip/wheels/a4/89/b9/3f11250225d0f90e5454fcc30fd1b7208db226850715aa9ace\n",
+            "Successfully built pytesseract\n",
+            "Installing collected packages: pytesseract\n",
+            "Successfully installed pytesseract-0.3.8\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "yIEgNSzImWok"
+      },
+      "source": [
+        "2)Libreraria"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "bgxnfETqfD7y"
+      },
+      "source": [
+        "import pytesseract\n",
+        "import shutil\n",
+        "import os\n",
+        "import random\n",
+        "try:\n",
+        " from PIL import Image\n",
+        "except ImportError:\n",
+        " import Image"
+      ],
+      "execution_count": 29,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "tM9Ctl7tfsOV",
+        "outputId": "a989b88d-f5fe-42e7-a74d-3a9e8c0a8df5"
+      },
+      "source": [
+        "!sudo apt install tesseract-ocr"
+      ],
+      "execution_count": 15,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Reading package lists... Done\n",
+            "Building dependency tree       \n",
+            "Reading state information... Done\n",
+            "tesseract-ocr is already the newest version (4.00~git2288-10f4998a-2).\n",
+            "0 upgraded, 0 newly installed, 0 to remove and 40 not upgraded.\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "_mWjybSrhh2e"
+      },
+      "source": [
+        "try:\n",
+        " from PIL import Image\n",
+        "except ImportError:\n",
+        " import Image\n",
+        "import cv2\n",
+        "import pytesseract"
+      ],
+      "execution_count": 31,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "ukjs7wDhgZ0U"
+      },
+      "source": [
+        "from PIL import ImageEnhance, ImageFilter, Image"
+      ],
+      "execution_count": 32,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "pYJ9AOsrmny1"
+      },
+      "source": [
+        "3)Subir el imagen a Colab"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "resources": {
+            "http://localhost:8080/nbextensions/google.colab/files.js": {
+              "data": "Ly8gQ29weXJpZ2h0IDIwMTcgR29vZ2xlIExMQwovLwovLyBMaWNlbnNlZCB1bmRlciB0aGUgQXBhY2hlIExpY2Vuc2UsIFZlcnNpb24gMi4wICh0aGUgIkxpY2Vuc2UiKTsKLy8geW91IG1heSBub3QgdXNlIHRoaXMgZmlsZSBleGNlcHQgaW4gY29tcGxpYW5jZSB3aXRoIHRoZSBMaWNlbnNlLgovLyBZb3UgbWF5IG9idGFpbiBhIGNvcHkgb2YgdGhlIExpY2Vuc2UgYXQKLy8KLy8gICAgICBodHRwOi8vd3d3LmFwYWNoZS5vcmcvbGljZW5zZXMvTElDRU5TRS0yLjAKLy8KLy8gVW5sZXNzIHJlcXVpcmVkIGJ5IGFwcGxpY2FibGUgbGF3IG9yIGFncmVlZCB0byBpbiB3cml0aW5nLCBzb2Z0d2FyZQovLyBkaXN0cmlidXRlZCB1bmRlciB0aGUgTGljZW5zZSBpcyBkaXN0cmlidXRlZCBvbiBhbiAiQVMgSVMiIEJBU0lTLAovLyBXSVRIT1VUIFdBUlJBTlRJRVMgT1IgQ09ORElUSU9OUyBPRiBBTlkgS0lORCwgZWl0aGVyIGV4cHJlc3Mgb3IgaW1wbGllZC4KLy8gU2VlIHRoZSBMaWNlbnNlIGZvciB0aGUgc3BlY2lmaWMgbGFuZ3VhZ2UgZ292ZXJuaW5nIHBlcm1pc3Npb25zIGFuZAovLyBsaW1pdGF0aW9ucyB1bmRlciB0aGUgTGljZW5zZS4KCi8qKgogKiBAZmlsZW92ZXJ2aWV3IEhlbHBlcnMgZm9yIGdvb2dsZS5jb2xhYiBQeXRob24gbW9kdWxlLgogKi8KKGZ1bmN0aW9uKHNjb3BlKSB7CmZ1bmN0aW9uIHNwYW4odGV4dCwgc3R5bGVBdHRyaWJ1dGVzID0ge30pIHsKICBjb25zdCBlbGVtZW50ID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnc3BhbicpOwogIGVsZW1lbnQudGV4dENvbnRlbnQgPSB0ZXh0OwogIGZvciAoY29uc3Qga2V5IG9mIE9iamVjdC5rZXlzKHN0eWxlQXR0cmlidXRlcykpIHsKICAgIGVsZW1lbnQuc3R5bGVba2V5XSA9IHN0eWxlQXR0cmlidXRlc1trZXldOwogIH0KICByZXR1cm4gZWxlbWVudDsKfQoKLy8gTWF4IG51bWJlciBvZiBieXRlcyB3aGljaCB3aWxsIGJlIHVwbG9hZGVkIGF0IGEgdGltZS4KY29uc3QgTUFYX1BBWUxPQURfU0laRSA9IDEwMCAqIDEwMjQ7CgpmdW5jdGlvbiBfdXBsb2FkRmlsZXMoaW5wdXRJZCwgb3V0cHV0SWQpIHsKICBjb25zdCBzdGVwcyA9IHVwbG9hZEZpbGVzU3RlcChpbnB1dElkLCBvdXRwdXRJZCk7CiAgY29uc3Qgb3V0cHV0RWxlbWVudCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKG91dHB1dElkKTsKICAvLyBDYWNoZSBzdGVwcyBvbiB0aGUgb3V0cHV0RWxlbWVudCB0byBtYWtlIGl0IGF2YWlsYWJsZSBmb3IgdGhlIG5leHQgY2FsbAogIC8vIHRvIHVwbG9hZEZpbGVzQ29udGludWUgZnJvbSBQeXRob24uCiAgb3V0cHV0RWxlbWVudC5zdGVwcyA9IHN0ZXBzOwoKICByZXR1cm4gX3VwbG9hZEZpbGVzQ29udGludWUob3V0cHV0SWQpOwp9CgovLyBUaGlzIGlzIHJvdWdobHkgYW4gYXN5bmMgZ2VuZXJhdG9yIChub3Qgc3VwcG9ydGVkIGluIHRoZSBicm93c2VyIHlldCksCi8vIHdoZXJlIHRoZXJlIGFyZSBtdWx0aXBsZSBhc3luY2hyb25vdXMgc3RlcHMgYW5kIHRoZSBQeXRob24gc2lkZSBpcyBnb2luZwovLyB0byBwb2xsIGZvciBjb21wbGV0aW9uIG9mIGVhY2ggc3RlcC4KLy8gVGhpcyB1c2VzIGEgUHJvbWlzZSB0byBibG9jayB0aGUgcHl0aG9uIHNpZGUgb24gY29tcGxldGlvbiBvZiBlYWNoIHN0ZXAsCi8vIHRoZW4gcGFzc2VzIHRoZSByZXN1bHQgb2YgdGhlIHByZXZpb3VzIHN0ZXAgYXMgdGhlIGlucHV0IHRvIHRoZSBuZXh0IHN0ZXAuCmZ1bmN0aW9uIF91cGxvYWRGaWxlc0NvbnRpbnVlKG91dHB1dElkKSB7CiAgY29uc3Qgb3V0cHV0RWxlbWVudCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKG91dHB1dElkKTsKICBjb25zdCBzdGVwcyA9IG91dHB1dEVsZW1lbnQuc3RlcHM7CgogIGNvbnN0IG5leHQgPSBzdGVwcy5uZXh0KG91dHB1dEVsZW1lbnQubGFzdFByb21pc2VWYWx1ZSk7CiAgcmV0dXJuIFByb21pc2UucmVzb2x2ZShuZXh0LnZhbHVlLnByb21pc2UpLnRoZW4oKHZhbHVlKSA9PiB7CiAgICAvLyBDYWNoZSB0aGUgbGFzdCBwcm9taXNlIHZhbHVlIHRvIG1ha2UgaXQgYXZhaWxhYmxlIHRvIHRoZSBuZXh0CiAgICAvLyBzdGVwIG9mIHRoZSBnZW5lcmF0b3IuCiAgICBvdXRwdXRFbGVtZW50Lmxhc3RQcm9taXNlVmFsdWUgPSB2YWx1ZTsKICAgIHJldHVybiBuZXh0LnZhbHVlLnJlc3BvbnNlOwogIH0pOwp9CgovKioKICogR2VuZXJhdG9yIGZ1bmN0aW9uIHdoaWNoIGlzIGNhbGxlZCBiZXR3ZWVuIGVhY2ggYXN5bmMgc3RlcCBvZiB0aGUgdXBsb2FkCiAqIHByb2Nlc3MuCiAqIEBwYXJhbSB7c3RyaW5nfSBpbnB1dElkIEVsZW1lbnQgSUQgb2YgdGhlIGlucHV0IGZpbGUgcGlja2VyIGVsZW1lbnQuCiAqIEBwYXJhbSB7c3RyaW5nfSBvdXRwdXRJZCBFbGVtZW50IElEIG9mIHRoZSBvdXRwdXQgZGlzcGxheS4KICogQHJldHVybiB7IUl0ZXJhYmxlPCFPYmplY3Q+fSBJdGVyYWJsZSBvZiBuZXh0IHN0ZXBzLgogKi8KZnVuY3Rpb24qIHVwbG9hZEZpbGVzU3RlcChpbnB1dElkLCBvdXRwdXRJZCkgewogIGNvbnN0IGlucHV0RWxlbWVudCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKGlucHV0SWQpOwogIGlucHV0RWxlbWVudC5kaXNhYmxlZCA9IGZhbHNlOwoKICBjb25zdCBvdXRwdXRFbGVtZW50ID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQob3V0cHV0SWQpOwogIG91dHB1dEVsZW1lbnQuaW5uZXJIVE1MID0gJyc7CgogIGNvbnN0IHBpY2tlZFByb21pc2UgPSBuZXcgUHJvbWlzZSgocmVzb2x2ZSkgPT4gewogICAgaW5wdXRFbGVtZW50LmFkZEV2ZW50TGlzdGVuZXIoJ2NoYW5nZScsIChlKSA9PiB7CiAgICAgIHJlc29sdmUoZS50YXJnZXQuZmlsZXMpOwogICAgfSk7CiAgfSk7CgogIGNvbnN0IGNhbmNlbCA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2J1dHRvbicpOwogIGlucHV0RWxlbWVudC5wYXJlbnRFbGVtZW50LmFwcGVuZENoaWxkKGNhbmNlbCk7CiAgY2FuY2VsLnRleHRDb250ZW50ID0gJ0NhbmNlbCB1cGxvYWQnOwogIGNvbnN0IGNhbmNlbFByb21pc2UgPSBuZXcgUHJvbWlzZSgocmVzb2x2ZSkgPT4gewogICAgY2FuY2VsLm9uY2xpY2sgPSAoKSA9PiB7CiAgICAgIHJlc29sdmUobnVsbCk7CiAgICB9OwogIH0pOwoKICAvLyBXYWl0IGZvciB0aGUgdXNlciB0byBwaWNrIHRoZSBmaWxlcy4KICBjb25zdCBmaWxlcyA9IHlpZWxkIHsKICAgIHByb21pc2U6IFByb21pc2UucmFjZShbcGlja2VkUHJvbWlzZSwgY2FuY2VsUHJvbWlzZV0pLAogICAgcmVzcG9uc2U6IHsKICAgICAgYWN0aW9uOiAnc3RhcnRpbmcnLAogICAgfQogIH07CgogIGNhbmNlbC5yZW1vdmUoKTsKCiAgLy8gRGlzYWJsZSB0aGUgaW5wdXQgZWxlbWVudCBzaW5jZSBmdXJ0aGVyIHBpY2tzIGFyZSBub3QgYWxsb3dlZC4KICBpbnB1dEVsZW1lbnQuZGlzYWJsZWQgPSB0cnVlOwoKICBpZiAoIWZpbGVzKSB7CiAgICByZXR1cm4gewogICAgICByZXNwb25zZTogewogICAgICAgIGFjdGlvbjogJ2NvbXBsZXRlJywKICAgICAgfQogICAgfTsKICB9CgogIGZvciAoY29uc3QgZmlsZSBvZiBmaWxlcykgewogICAgY29uc3QgbGkgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCdsaScpOwogICAgbGkuYXBwZW5kKHNwYW4oZmlsZS5uYW1lLCB7Zm9udFdlaWdodDogJ2JvbGQnfSkpOwogICAgbGkuYXBwZW5kKHNwYW4oCiAgICAgICAgYCgke2ZpbGUudHlwZSB8fCAnbi9hJ30pIC0gJHtmaWxlLnNpemV9IGJ5dGVzLCBgICsKICAgICAgICBgbGFzdCBtb2RpZmllZDogJHsKICAgICAgICAgICAgZmlsZS5sYXN0TW9kaWZpZWREYXRlID8gZmlsZS5sYXN0TW9kaWZpZWREYXRlLnRvTG9jYWxlRGF0ZVN0cmluZygpIDoKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgJ24vYSd9IC0gYCkpOwogICAgY29uc3QgcGVyY2VudCA9IHNwYW4oJzAlIGRvbmUnKTsKICAgIGxpLmFwcGVuZENoaWxkKHBlcmNlbnQpOwoKICAgIG91dHB1dEVsZW1lbnQuYXBwZW5kQ2hpbGQobGkpOwoKICAgIGNvbnN0IGZpbGVEYXRhUHJvbWlzZSA9IG5ldyBQcm9taXNlKChyZXNvbHZlKSA9PiB7CiAgICAgIGNvbnN0IHJlYWRlciA9IG5ldyBGaWxlUmVhZGVyKCk7CiAgICAgIHJlYWRlci5vbmxvYWQgPSAoZSkgPT4gewogICAgICAgIHJlc29sdmUoZS50YXJnZXQucmVzdWx0KTsKICAgICAgfTsKICAgICAgcmVhZGVyLnJlYWRBc0FycmF5QnVmZmVyKGZpbGUpOwogICAgfSk7CiAgICAvLyBXYWl0IGZvciB0aGUgZGF0YSB0byBiZSByZWFkeS4KICAgIGxldCBmaWxlRGF0YSA9IHlpZWxkIHsKICAgICAgcHJvbWlzZTogZmlsZURhdGFQcm9taXNlLAogICAgICByZXNwb25zZTogewogICAgICAgIGFjdGlvbjogJ2NvbnRpbnVlJywKICAgICAgfQogICAgfTsKCiAgICAvLyBVc2UgYSBjaHVua2VkIHNlbmRpbmcgdG8gYXZvaWQgbWVzc2FnZSBzaXplIGxpbWl0cy4gU2VlIGIvNjIxMTU2NjAuCiAgICBsZXQgcG9zaXRpb24gPSAwOwogICAgZG8gewogICAgICBjb25zdCBsZW5ndGggPSBNYXRoLm1pbihmaWxlRGF0YS5ieXRlTGVuZ3RoIC0gcG9zaXRpb24sIE1BWF9QQVlMT0FEX1NJWkUpOwogICAgICBjb25zdCBjaHVuayA9IG5ldyBVaW50OEFycmF5KGZpbGVEYXRhLCBwb3NpdGlvbiwgbGVuZ3RoKTsKICAgICAgcG9zaXRpb24gKz0gbGVuZ3RoOwoKICAgICAgY29uc3QgYmFzZTY0ID0gYnRvYShTdHJpbmcuZnJvbUNoYXJDb2RlLmFwcGx5KG51bGwsIGNodW5rKSk7CiAgICAgIHlpZWxkIHsKICAgICAgICByZXNwb25zZTogewogICAgICAgICAgYWN0aW9uOiAnYXBwZW5kJywKICAgICAgICAgIGZpbGU6IGZpbGUubmFtZSwKICAgICAgICAgIGRhdGE6IGJhc2U2NCwKICAgICAgICB9LAogICAgICB9OwoKICAgICAgbGV0IHBlcmNlbnREb25lID0gZmlsZURhdGEuYnl0ZUxlbmd0aCA9PT0gMCA/CiAgICAgICAgICAxMDAgOgogICAgICAgICAgTWF0aC5yb3VuZCgocG9zaXRpb24gLyBmaWxlRGF0YS5ieXRlTGVuZ3RoKSAqIDEwMCk7CiAgICAgIHBlcmNlbnQudGV4dENvbnRlbnQgPSBgJHtwZXJjZW50RG9uZX0lIGRvbmVgOwoKICAgIH0gd2hpbGUgKHBvc2l0aW9uIDwgZmlsZURhdGEuYnl0ZUxlbmd0aCk7CiAgfQoKICAvLyBBbGwgZG9uZS4KICB5aWVsZCB7CiAgICByZXNwb25zZTogewogICAgICBhY3Rpb246ICdjb21wbGV0ZScsCiAgICB9CiAgfTsKfQoKc2NvcGUuZ29vZ2xlID0gc2NvcGUuZ29vZ2xlIHx8IHt9OwpzY29wZS5nb29nbGUuY29sYWIgPSBzY29wZS5nb29nbGUuY29sYWIgfHwge307CnNjb3BlLmdvb2dsZS5jb2xhYi5fZmlsZXMgPSB7CiAgX3VwbG9hZEZpbGVzLAogIF91cGxvYWRGaWxlc0NvbnRpbnVlLAp9Owp9KShzZWxmKTsK",
+              "ok": true,
+              "headers": [
+                [
+                  "content-type",
+                  "application/javascript"
+                ]
+              ],
+              "status": 200,
+              "status_text": ""
+            }
+          },
+          "base_uri": "https://localhost:8080/",
+          "height": 72
+        },
+        "id": "PCEL3WrboCTa",
+        "outputId": "b88e80a2-c477-4581-982b-84750a618ab6"
+      },
+      "source": [
+        "from google.colab import files\n",
+        "uploaded = files.upload()"
+      ],
+      "execution_count": 33,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/html": [
+              "\n",
+              "     <input type=\"file\" id=\"files-2faff065-fe19-4175-ad7e-51bebae41333\" name=\"files[]\" multiple disabled\n",
+              "        style=\"border:none\" />\n",
+              "     <output id=\"result-2faff065-fe19-4175-ad7e-51bebae41333\">\n",
+              "      Upload widget is only available when the cell has been executed in the\n",
+              "      current browser session. Please rerun this cell to enable.\n",
+              "      </output>\n",
+              "      <script src=\"/nbextensions/google.colab/files.js\"></script> "
+            ],
+            "text/plain": [
+              "<IPython.core.display.HTML object>"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          }
+        },
+        {
+          "output_type": "stream",
+          "text": [
+            "Saving ima.jpeg to ima (1).jpeg\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "MCdAtrEYoKQY"
+      },
+      "source": [
+        "4) Extracción de texto\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "rH0tdmvzY1pW",
+        "outputId": "34af8e81-b78e-4dc7-acaa-8be9212e76ff"
+      },
+      "source": [
+        "image_path_in_colab='ima.jpeg'\n",
+        "extractedInformation = pytesseract.image_to_string(Image.open(image_path_in_colab))\n",
+        "print(extractedInformation)"
+      ],
+      "execution_count": 35,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "wD we % PACs\n",
+            "Goo SARE SES WEE\n",
+            "\n",
+            "   \n",
+            " \n",
+            " \n",
+            " \n",
+            "\n",
+            "SS WSS SS\n",
+            "WOT\n",
+            "\n",
+            "ne\n",
+            "\n",
+            "BOP SA SSS\n",
+            "A EERS SS WRN WRENS\n",
+            "\n",
+            "VS WMS\n",
+            "WO WOES SRN WS\n",
+            "REAR Se See\n",
+            "AN we es\n",
+            "SS RSS a ae\n",
+            "\n",
+            "LS SS SWS\n",
+            "\n",
+            "GO E \\\\\n",
+            "N We Ws SS\n",
+            "ENE Ss WS fe\n",
+            "AS\n",
+            "\n",
+            " \n",
+            " \n",
+            "    \n",
+            "   \n",
+            "    \n",
+            "\n",
+            "Mees we\n",
+            "\n",
+            "   \n",
+            "\f\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "UBSXKgFAaOO-"
+      },
+      "source": [
+        "5) Detectar e lenguaje "
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "iZGVbx_qb1O_"
+      },
+      "source": [
+        "# French text image to string\n",
+        "extractedInformation = pytesseract.image_to_string(Image.open('test-european.jpeg'), lang='fra')\n",
+        "print(extractedInformation)"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "glaA7Svhbz56"
+      },
+      "source": [
+        ""
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "uCqrHNlkazoH"
+      },
+      "source": [
+        "6) Dentro de las cajas"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "reiKPcvga4O0",
+        "outputId": "07e937db-687f-4c6b-956f-085c31025783"
+      },
+      "source": [
+        "# Get bounding box estimates\n",
+        "print(pytesseract.image_to_boxes(Image.open(image_path_in_colab)))"
+      ],
+      "execution_count": 39,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "w 0 909 28 936 0\n",
+            "D 28 909 65 936 0\n",
+            "w 83 906 124 936 0\n",
+            "e 124 906 165 936 0\n",
+            "% 169 905 213 936 0\n",
+            "P 226 903 259 936 0\n",
+            "A 259 903 298 936 0\n",
+            "C 317 931 322 936 0\n",
+            "s 322 891 344 936 0\n",
+            "G 0 799 73 895 0\n",
+            "o 81 856 135 894 0\n",
+            "o 135 807 363 893 0\n",
+            "S 301 891 344 922 0\n",
+            "A 345 867 401 936 0\n",
+            "R 401 867 445 936 0\n",
+            "E 450 867 501 936 0\n",
+            "S 496 867 650 936 0\n",
+            "E 665 844 837 936 0\n",
+            "S 837 844 1029 936 0\n",
+            "W 958 897 1006 936 0\n",
+            "E 1006 869 1102 936 0\n",
+            "E 1102 890 1164 936 0\n",
+            "~ 1150 845 1400 859 0\n",
+            "~ 1154 859 1400 872 0\n",
+            "~ 1164 872 1400 936 0\n",
+            "~ 1313 727 1400 793 0\n",
+            "~ 1314 686 1400 727 0\n",
+            "~ 1307 655 1392 686 0\n",
+            "S 1005 819 1101 874 0\n",
+            "S 1103 826 1126 843 0\n",
+            "W 1082 824 1126 848 0\n",
+            "S 1130 826 1150 859 0\n",
+            "S 1400 0 1400 0 0\n",
+            "S 1172 832 1197 857 0\n",
+            "S 1222 853 1234 861 0\n",
+            "W 1119 805 1143 824 0\n",
+            "O 1149 806 1173 825 0\n",
+            "T 1173 800 1229 832 0\n",
+            "n 731 0 806 0 0\n",
+            "e 809 0 859 0 0\n",
+            "B 66 803 115 844 0\n",
+            "O 119 804 160 844 0\n",
+            "P 165 807 549 857 0\n",
+            "S 614 826 657 883 0\n",
+            "A 657 826 781 883 0\n",
+            "S 751 831 797 854 0\n",
+            "S 797 832 831 859 0\n",
+            "S 928 839 1040 878 0\n",
+            "A 0 712 85 796 0\n",
+            "E 83 748 131 797 0\n",
+            "E 150 752 245 803 0\n",
+            "R 245 760 291 805 0\n",
+            "S 291 765 344 805 0\n",
+            "S 289 765 330 805 0\n",
+            "S 336 768 381 808 0\n",
+            "W 382 771 432 827 0\n",
+            "R 432 771 516 827 0\n",
+            "N 521 781 602 829 0\n",
+            "W 521 781 633 829 0\n",
+            "R 633 747 703 824 0\n",
+            "E 703 752 850 859 0\n",
+            "N 850 771 935 860 0\n",
+            "S 935 805 1037 839 0\n",
+            "V 337 659 448 767 0\n",
+            "S 448 712 713 783 0\n",
+            "W 763 754 797 788 0\n",
+            "M 797 758 825 789 0\n",
+            "S 826 747 1190 808 0\n",
+            "W 700 719 726 749 0\n",
+            "O 734 725 795 756 0\n",
+            "W 889 728 914 744 0\n",
+            "O 939 741 963 768 0\n",
+            "E 964 743 987 771 0\n",
+            "S 999 748 1011 762 0\n",
+            "S 1043 755 1066 772 0\n",
+            "R 1068 762 1097 776 0\n",
+            "N 1116 742 1243 788 0\n",
+            "W 1259 765 1283 792 0\n",
+            "S 1292 772 1304 783 0\n",
+            "R 387 627 495 699 0\n",
+            "E 495 652 502 699 0\n",
+            "A 530 658 565 709 0\n",
+            "R 566 640 682 723 0\n",
+            "S 650 684 841 790 0\n",
+            "e 841 668 1005 765 0\n",
+            "S 956 671 1210 792 0\n",
+            "e 1247 697 1312 792 0\n",
+            "e 1347 674 1363 688 0\n",
+            "A 501 553 583 660 0\n",
+            "N 583 623 667 674 0\n",
+            "w 588 511 945 729 0\n",
+            "e 945 560 1226 744 0\n",
+            "e 1136 645 1289 731 0\n",
+            "s 1289 645 1335 725 0\n",
+            "S 1009 619 1038 659 0\n",
+            "S 1062 599 1087 628 0\n",
+            "R 1096 617 1149 651 0\n",
+            "S 1167 624 1205 655 0\n",
+            "S 1205 607 1235 659 0\n",
+            "a 1210 593 1327 688 0\n",
+            "a 1302 615 1350 672 0\n",
+            "e 1350 610 1400 688 0\n",
+            "L 800 568 909 647 0\n",
+            "S 909 610 959 657 0\n",
+            "S 962 574 1034 654 0\n",
+            "S 1040 587 1072 615 0\n",
+            "S 1068 575 1102 598 0\n",
+            "W 1153 591 1158 633 0\n",
+            "S 1158 562 1400 637 0\n",
+            "G 1035 553 1048 578 0\n",
+            "O 1052 569 1071 581 0\n",
+            "E 1098 559 1135 587 0\n",
+            "\\ 1188 563 1205 588 0\n",
+            "\\ 1205 568 1231 602 0\n",
+            "N 892 521 965 601 0\n",
+            "W 947 533 1048 611 0\n",
+            "e 1051 511 1106 571 0\n",
+            "W 1115 543 1182 622 0\n",
+            "s 1209 535 1231 560 0\n",
+            "S 1238 537 1310 585 0\n",
+            "S 1311 528 1344 590 0\n",
+            "E 743 511 799 570 0\n",
+            "N 827 479 875 551 0\n",
+            "E 875 385 968 539 0\n",
+            "S 966 519 1005 550 0\n",
+            "s 1007 490 1032 517 0\n",
+            "W 1115 519 1169 567 0\n",
+            "S 1200 527 1225 554 0\n",
+            "f 1179 500 1256 569 0\n",
+            "e 1256 379 1400 616 0\n",
+            "A 1300 412 1345 489 0\n",
+            "S 1345 450 1400 503 0\n",
+            "~ 0 690 443 736 0\n",
+            "~ 0 625 457 690 0\n",
+            "~ 0 574 582 601 0\n",
+            "~ 0 606 528 609 0\n",
+            "~ 0 601 528 606 0\n",
+            "~ 0 609 528 625 0\n",
+            "~ 0 533 842 574 0\n",
+            "~ 0 482 877 533 0\n",
+            "~ 765 574 842 606 0\n",
+            "~ 0 437 1125 467 0\n",
+            "~ 0 0 1400 437 0\n",
+            "~ 0 467 1111 468 0\n",
+            "~ 1057 482 1111 522 0\n",
+            "M 948 348 1034 524 0\n",
+            "e 1034 339 1115 547 0\n",
+            "e 1115 362 1197 538 0\n",
+            "s 1197 351 1327 548 0\n",
+            "w 1276 465 1347 529 0\n",
+            "e 1347 455 1394 502 0\n",
+            "~ 1231 437 1400 460 0\n",
+            "~ 1231 460 1311 467 0\n",
+            "~ 1338 460 1400 467 0\n",
+            "\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    }
+  ]
+}
